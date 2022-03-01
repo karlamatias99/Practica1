@@ -1,0 +1,266 @@
+package com.example.practica1.Analizador;
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+import com.example.practica1.Graficas.*;
+
+
+/* Codigo java del parser*/
+parser code {:
+
+
+ //Listas
+    private ArrayList<String> errorsList=new ArrayList<String>();
+    private ArrayList<Graficas> graficasList=new ArrayList<Graficas>();
+    private ArrayList<GraficasFinded> reporteGraficasList= new ArrayList<GraficasFinded>();
+    private ArrayList<ErrorFinded> reporteErrorList= new ArrayList<ErrorFinded>();
+    private ArrayList<OperadorFinded> reporteOperadorList= new ArrayList<OperadorFinded>();
+
+ public GraficasParser(GraficasLexer lexer) {
+        super(lexer);
+    }
+
+@Override
+    /*    public void syntax_error(Symbol st) {
+            //Reporte el error
+            List<Integer> lista=expected_token_ids();
+        	Token token = (Token) st.value;
+            report_error("Error Sintactico con el  Token:"+ token.getLexeme()+" este no pertenece a la estructura - linea: "+token.getLine()+" - columna: "+token.getColumn() + "\n",null);
+            //Imprime el error
+            errorsList.add(String.format("Error Lexico con el Token: '%s' este no pertenece a la estructura- linea: %d  columna: %d", token.getLexeme(), token.getLine(), token.getColumn()));
+            reporteErrorList.add(new ErrorFinded(token.getLexeme(),token.getLine(),token.getColumn(),"Sintactico","Error sintactico, se esperaba "+tokenEsperado(lista.get(0))));
+
+            errorsList.add(String.format(token.getLexeme(),token.getLine(),token.getColumn(),"Lexico","Símbolo no existe en el lenguaje"));
+            reporteErrorList.add(new ErrorFinded(token.getLexeme(),token.getLine(),token.getColumn(),"Lexico","Símbolo no existe en el lenguaje"));
+
+
+        }*/
+
+
+public void syntax_error(Symbol s){
+        System.out.println("Error Sintáctico en la Línea " + (s.left) +
+        " Columna "+s.right+ ". No se esperaba este componente: " +s.value+".");
+
+        //Reporte el error
+               /*     List<Integer> lista=expected_token_ids();
+                	Token token = (Token) s.value;
+                    report_error("Error Sintactico con el  Token:"+ token.getLexeme()+" este no pertenece a la estructura - linea: "+token.getLine()+" - columna: "+token.getColumn() + "\n",null);
+                    //Imprime el error
+                    errorsList.add(String.format("Error Lexico con el Token: '%s' este no pertenece a la estructura- linea: %d  columna: %d", token.getLexeme(), token.getLine(), token.getColumn()));
+    reporteErrorList.add(new ErrorFinded(token.getLexeme(),token.getLine(),token.getColumn(),"Lexico","Símbolo no existe en el lenguaje"));
+*/
+//Reporte sintactico
+    List<Integer> lista=expected_token_ids();
+    Integer linea = (Integer) s.left;
+    Integer columna = (Integer) s.right;
+    String componente = (String) s.value;
+    report_error("Error Sintáctico en la Línea " + linea +
+            " Columna "+columna+ ". No se esperaba este componente: " +componente+"." + "\n",null);
+    //Imprime el error
+
+    errorsList.add(String.format("Error Sintactico con el Token: '%s' este no pertenece a la estructura- linea: %d  columna: %d", componente, linea, columna));
+
+    reporteErrorList.add(new ErrorFinded(componente, linea, columna,"Sintactico","Error sintactico, se esperaba "+tokenEsperado(lista.get(0))));
+
+    }
+
+        @Override
+            public List<Integer> expected_token_ids() {
+                return super.expected_token_ids();
+            }
+        	    //Retorna list de errores sintacticos
+                public ArrayList getReporteErrorsList(){
+        	        return reporteErrorList;
+        	    }
+                //Retorna list de errores sintacticos del reporte
+                public ArrayList getErrorsList(){
+        	        return errorsList;
+        	    }
+
+                 //Retorna list de operadores
+                public ArrayList getOperadoresList(){
+        	        return reporteOperadorList;
+        	    }
+
+//Ingresa datos en array de operadores
+        public void addOperadorList(OperadorFinded operador){
+            try {
+                 reporteOperadorList.add(operador);
+                }
+            catch(Exception e) {
+                System.out.println("error encontrado: "+e);
+                }
+	    }
+
+	     //Retorna list de graficas
+                public ArrayList getGraficasList(){
+        	        return graficasList;
+        	    }
+            //Ingresa datos en array de graficas
+                    public void addGraficasList(Graficas grafica){
+                        try {
+                             graficasList.add(grafica);
+                            }
+                        catch(Exception e) {
+                            System.out.println("error encontrado: "+e);
+                            }
+            	    }
+            	     //Retorna list de objetos
+                            public ArrayList getGraficaList(){
+                    	        return reporteGraficasList;
+                    	    }
+                            //Ingresa datos en array de objetos
+                            public void addGraficaList(String grafica){
+                                boolean graficaEncontrada = false;
+                                try {
+                                    if(reporteGraficasList.size()==0){
+                                        GraficasFinded nuevaGrafica=new GraficasFinded(grafica,1);
+                                        reporteGraficasList.add(nuevaGrafica);
+                                    }
+                                    else{
+                                        for ( GraficasFinded graficasEncontradas : reporteGraficasList) {
+                                            if(graficasEncontradas.getGrafica().equals(grafica)){
+                                                graficasEncontradas.setCantidad(graficasEncontradas.getCantidad()+1);
+                                                graficaEncontrada=true;
+                                            }
+                                        }
+                                        if(graficaEncontrada==false){
+                                           GraficasFinded nuevaGrafica=new GraficasFinded(grafica,1);
+                                            reporteGraficasList.add(nuevaGrafica);
+                                        }
+                                    }
+                                }
+                                catch(Exception e) {
+                                    System.out.println("error encontrado: "+e);
+                                    }
+                    	    }
+
+private String tokenEsperado(int token){
+                if(token==16)return "{";
+                else if(token==17)return "}";
+                else if(token==19)return "[";
+                else if(token==20)return "]";
+                else if(token==4)return "barra";
+                else if(token==5)return "pie";
+                else if(token==15)return ";";
+                else if(token==6)return "ejecutar";
+                else if(token==18)return ",";
+                else if(token==2)return "entero";
+                else if(token==14)return ")";
+                else if(token==13)return "(";
+                else return " ";
+        }
+
+
+:};
+
+
+// seccion de terminales En MAYUSCULAS
+
+terminal Token ENTERO, IDENTIFICADOR, BARRAS, PIE, EJECUTAR,  TIPO ,DEFINIR, SUMA, RESTA, DIVISION, MULTIPLICACION, PARENTESISA,
+ PARENTESISB, PTCOMA, LLAVE_ABRE, LLAVE_CIERRA, COMA, CORCHETE_ABRE, CORCHETE_CIERRA, TITULO,
+TIPOS, EJEX, EJEY, UNIR, VALORES, DOSPUNTOS, ETIQUETA, TOTAL, EXTRA, ESPACIO;
+//COMENTARIO
+
+// seccion de no termimales en minusculas
+non terminal  Inicio, Definir, Grafica, Proxima, Ejecutar, Identificador;
+non terminal Integer Operacion;
+
+
+/* Precedencias */
+precedence left SUMA,RESTA;
+precedence left MULTIPLICACION,DIVISION;
+
+/*Gramatica */
+start with Inicio;
+
+Inicio ::= Definir
+| error{:System.out.println("Error en expresion");:}
+|
+;
+
+//definir grafica
+Definir ::= DEFINIR Grafica
+;
+
+//tipo de grafica
+Grafica ::= PIE LLAVE_ABRE
+           TITULO DOSPUNTOS Identificador:titulo PTCOMA
+	   TIPOS DOSPUNTOS TIPO:tipo PTCOMA
+	   ETIQUETA DOSPUNTOS CORCHETE_ABRE IDENTIFICADOR:etiquetas1 COMA IDENTIFICADOR:etiquetas2 CORCHETE_CIERRA PTCOMA
+	   VALORES DOSPUNTOS CORCHETE_ABRE Operacion:valores1 COMA Operacion:valores2 CORCHETE_CIERRA PTCOMA
+	   TOTAL DOSPUNTOS Operacion:total PTCOMA
+	   UNIR DOSPUNTOS CORCHETE_ABRE LLAVE_ABRE Operacion:unir1 COMA Operacion:unir2 LLAVE_CIERRA COMA
+           LLAVE_ABRE Operacion:unir3 COMA Operacion:unir4 LLAVE_CIERRA CORCHETE_CIERRA PTCOMA
+           EXTRA DOSPUNTOS IDENTIFICADOR:extra PTCOMA
+
+LLAVE_CIERRA Proxima
+{:Pie nuevaGraficaPie=new Pie("Pie",titulo.toString(), unir1,unir2,unir3,unir4, etiquetas1.getLexeme(), etiquetas2.getLexeme(), valores1,valores2, tipo.getLexeme(), extra.getLexeme());
+   addGraficasList(nuevaGraficaPie);
+   addGraficaList("Pie"); :}
+
+| BARRAS LLAVE_ABRE
+	TITULO DOSPUNTOS Identificador:titulo PTCOMA
+	EJEX DOSPUNTOS CORCHETE_ABRE IDENTIFICADOR:ejex1 COMA IDENTIFICADOR:ejex2 CORCHETE_CIERRA PTCOMA
+	EJEY DOSPUNTOS CORCHETE_ABRE Operacion:ejey1 COMA Operacion:ejey2 CORCHETE_CIERRA PTCOMA
+	UNIR DOSPUNTOS CORCHETE_ABRE LLAVE_ABRE Operacion:unir1 COMA Operacion:unir2 LLAVE_CIERRA COMA
+	LLAVE_ABRE Operacion:unir3 COMA Operacion:unir4 LLAVE_CIERRA CORCHETE_CIERRA PTCOMA
+
+LLAVE_CIERRA Proxima
+{:Barras nuevaGraficaBarra=new  Barras("Pie",titulo.toString(), unir1,unir2,unir3,unir4, ejex1.getLexeme(), ejex2.getLexeme(), ejey1,ejey2);
+    addGraficasList(nuevaGraficaBarra);
+   addGraficaList("Barras"); :}
+
+| error{:System.out.println("Error en expresion");:}
+;
+
+//Operaciones matematicas
+Operacion ::= Operacion:numero1 SUMA:signo Operacion:numero2
+{: RESULT = new Integer(numero1.intValue()+numero2.intValue());
+OperadorFinded nuevoOperador=new OperadorFinded("Suma", signo.getLine(),signo.getColumn(),String.valueOf(numero1+"+"+numero2));
+reporteOperadorList.add(nuevoOperador);:}
+
+|Operacion:numero1 RESTA:signo Operacion:numero2
+{: RESULT = new Integer(numero1.intValue()-numero2.intValue());
+OperadorFinded nuevoOperador=new OperadorFinded("Resta", signo.getLine(),signo.getColumn(),String.valueOf(numero1+"-"+numero2));
+reporteOperadorList.add(nuevoOperador);:}
+
+|Operacion:numero1 MULTIPLICACION:signo Operacion:numero2
+{: RESULT = new Integer(numero1.intValue()*numero2.intValue());
+OperadorFinded nuevoOperador=new OperadorFinded("Multiplicacion", signo.getLine(),signo.getColumn(),String.valueOf(numero1+"*"+numero2));
+reporteOperadorList.add(nuevoOperador);:}
+
+|Operacion:numero1 DIVISION:signo Operacion:numero2
+{: RESULT = new Integer(numero1.intValue()/numero2.intValue());
+OperadorFinded nuevoOperador=new OperadorFinded("Division", signo.getLine(),signo.getColumn(),String.valueOf(numero1+"/"+numero2));
+reporteOperadorList.add(nuevoOperador);:}
+
+| ENTERO:n
+{:  RESULT = Integer.valueOf( n.getLexeme()); :}
+| PARENTESISA Operacion:operacion PARENTESISB
+{: RESULT = operacion; :}
+| error:error{:System.out.println("Error en expresion");:}
+;
+//Identificadores
+Identificador ::= IDENTIFICADOR ESPACIO IDENTIFICADOR
+|IDENTIFICADOR
+|
+;
+
+
+//Salto de linea
+Proxima ::= Definir
+| Ejecutar
+| 
+;
+
+//ejecutar la grafica
+Ejecutar ::= EJECUTAR IDENTIFICADOR: titulo 
+| error{:System.out.println("Error en expresion");:}
+;
+
+
+
+
+
+
